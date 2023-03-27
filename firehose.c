@@ -279,6 +279,8 @@ static int firehose_configure(struct qdl_device *qdl, bool skip_storage_init, co
 		max_payload_size = size;
 	}
 
+	qdl_set_buffer_size(qdl, size);
+
 	if (qdl_debug) {
 		fprintf(stderr, "[CONFIGURE] max payload size: %zu\n",
 			max_payload_size);

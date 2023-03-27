@@ -75,7 +75,7 @@ struct qdl_device {
 	size_t in_maxpktsize;
 	size_t out_maxpktsize;
 
-	size_t multiplier;
+	size_t buffer_size;
 };
 
 bool qdl_debug;
@@ -364,7 +364,7 @@ int qdl_write(struct qdl_device *qdl, const void *buf, size_t len)
 
 	while(len > 0) {
 		int xfer;
-		xfer = (len > qdl->out_maxpktsize * qdl->multiplier) ? qdl->out_maxpktsize * qdl->multiplier : len;
+		xfer = (len > qdl->buffer_size) ? qdl->buffer_size : len;
 
 		bulk.ep = qdl->out_ep;
 		bulk.len = xfer;
@@ -375,8 +375,8 @@ int qdl_write(struct qdl_device *qdl, const void *buf, size_t len)
 		if(n != xfer) {
 			fprintf(stderr, "ERROR: n = %d, errno = %d (%s)\n",
 				n, errno, strerror(errno));
-			if(errno == ENOMEM && qdl->multiplier != 1) {
-				fprintf(stderr, "Buffer multiplier set to %lu. Try using smaller multiplier!\n", qdl->multiplier);
+			if(errno == ENOMEM) {
+				fprintf(stderr, "Buffer size set to %lu[kb]. Try using smaller buffer!\n", qdl->buffer_size / 1024);
 			}
 			return -1;
 		}
@@ -403,7 +403,7 @@ static void print_usage(void)
 {
 	extern const char *__progname;
 	fprintf(stderr,
-		"%s [--debug] [--multiplier 1-2048] [--storage <emmc|nand|ufs>] [--finalize-provisioning] [--include <PATH>] <prog.mbn> [<program> <patch> ...]\n",
+		"%s [--debug] [--buffer 1-1024 [kb]] [--storage <emmc|nand|ufs>] [--finalize-provisioning] [--include <PATH>] <prog.mbn> [<program> <patch> ...]\n",
 		__progname);
 }
 
@@ -416,7 +416,7 @@ int main(int argc, char **argv)
 	int opt;
 	bool qdl_finalize_provisioning = false;
 	struct qdl_device qdl;
-	qdl.multiplier = 128;
+	qdl.buffer_size = 64;
 
 
 	static struct option options[] = {
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
 		{"include", required_argument, 0, 'i'},
 		{"finalize-provisioning", no_argument, 0, 'l'},
 		{"storage", required_argument, 0, 's'},
-		{"multiplier", required_argument, 0, 'm'},
+		{"buffer_size", required_argument, 0, 'm'},
 		{0, 0, 0, 0}
 	};
 
@@ -442,9 +442,9 @@ int main(int argc, char **argv)
 		case 's':
 			storage = optarg;
 			break;
-		case 'm':
-			qdl.multiplier = strtol(optarg, NULL, 10);
-			if(qdl.multiplier >= 1 && qdl.multiplier <= 2048){
+		case 'b':
+			qdl.buffer_size = strtol(optarg, NULL, 10);
+			if(qdl.buffer_size >= 1 && qdl.buffer_size <= 1024){
 				continue;
 			}
 		default:
@@ -501,4 +501,13 @@ int main(int argc, char **argv)
 		return 1;
 
 	return 0;
+}
+
+void qdl_set_buffer_size(struct qdl_device *qdl, size_t size){
+	if(qdl->buffer_size > size)
+		qdl->buffer_size = size;
+
+	qdl->buffer_size *= 1024;
+	
+	fprintf(stderr, "Using buffer size %zu[kb]\n", size);
 }

@@ -15,28 +15,28 @@ e.g. the libxml2-dev package.
 With this installed run:
   make
 
-Buffer multiplier
+Buffer size
 ========
 **Warning**
 Using this parameter might not work stable on your system. Read [760b3df](https://github.com/andersson/qdl/commit/760b3dffb03d2b7dfb82c6eac652a092f51c572d) for
 more details. 
 
 
-To improve flashing speed buffer multiplier parameter was added.
+To improve flashing speed buffer size parameter was added.
 It uses bigger buffers for sending data on USB what allows to flash
 faster.
 
 Measurements made on VM Linux Mint 21.1 and may vary compared to native
 machine.
 
-| Multiplier | Measured speed [kB/s] |
-| ---------- | --------------------- |
-| 1          | 3365                  |
-| 2          | 6219                  |
-| 4          | 11515                 |
-| 8          | 18058                 |
-| 16         | 25133                 |
-| 32         | 28872                 |
-| 64         | 33399                 |
-| 128        | 36208                 |
-| 256        | 35574                 |
+| Buffer size [kB] | Measured speed [kB/s] |
+| ---------------- | --------------------- |
+| standard 512B    | 3365                  |
+| 1                | 6219                  |
+| 2                | 11515                 |
+| 4                | 18058                 |
+| 8                | 25133                 |
+| 16               | 28872                 |
+| 32               | 33399                 |
+| 64               | 36208                 |
+| 128              | 35574                 |
